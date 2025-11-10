@@ -1,0 +1,8 @@
+# Ignore the secret keys!
+.streamlit/secrets.toml
+
+# Ignore temporary files
+temp_image.png
+__pycache__/
+*.pyc
+.DS_Store
