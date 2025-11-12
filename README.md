@@ -1,5 +1,6 @@
-Here's the direct streamlit link to access the app - 
+Here's the direct streamlit link to access the app - https://geopulse-ai-app-fpbsnz2fwnqfwctxm98kkg.streamlit.app/
 Also if you encounter and error in the app- make sure to clear the cache in the three dotted - click clear cache and then inputs.
+OR Just refresh the page.
 #  GeoPulse AI Publisher
 
 This is an AI-powered marketing tool that analyzes real-time, hyper-local signals (Weather, AQI, Holidays, and News) to generate and publish complete, brand-safe social media posts.
