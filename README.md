@@ -2,14 +2,6 @@
 
 
 
-You are right\! You don't need my explanations anymore, you need the final instructions.
-
-Here is the complete, copy-and-paste "How to Run" guide for your GitHub README. This is exactly what a professional developer would write.
-
------
-
-(Just copy everything from the line below and paste it into your `README.md` file on GitHub)
-
 # 🚀 GeoPulse AI Publisher
 
 This is an AI-powered marketing tool that analyzes real-time, hyper-local signals (Weather, AQI, Holidays, and News) to generate and publish complete, brand-safe social media posts.
