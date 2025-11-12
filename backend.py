@@ -145,7 +145,7 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
             f"Top Event/News: {live_signal.get('top_event', 'None')}."
         )
         
-        # --- UPGRADED PROMPT: Asks for Impact Rating ---
+        # --- THIS IS THE FIX: Added a DALL-E SAFETY GUARDRAIL ---
         system_prompt = f"""
         You are an expert social media manager and marketing strategist for the brand *{company_profile['brand_name']}*.
         Your brand voice is: *{company_profile['voice']}*
@@ -153,19 +153,21 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         
         You MUST generate five things in a JSON format:
         1.  `post_text`: A short, ready-to-publish social media post (under 500 characters).
-        2.  `image_prompt`: A concise, visually descriptive, 100% brand-safe DALL-E prompt.
+        2.  `image_prompt`: A concise, visually descriptive DALL-E prompt.
         3.  `hashtags`: A JSON array of 3-5 relevant and trending hashtags.
         4.  `target_audience`: A JSON array of 2-3 specific audience segments this post will appeal to.
         5.  `predicted_impact_rating`: A single rating ("High", "Medium", or "Low") of this post's potential.
         6.  `predicted_impact_reasoning`: A 1-sentence analysis of *why* this post will perform well.
-        
+
         **DALL-E SAFETY GUARDRAIL (Very Important):**
-        The `image_prompt` MUST be 100% brand-safe.
+        The `image_prompt` MUST be 100% brand-safe. The DALL-E safety system is very strict.
         - DO NOT use words that could be misinterpreted as violent, sexual, hateful, or promoting self-harm (e.g., avoid "killer", "shoot", "bang", "die for", "explosion of flavor").
-        - Keep the prompt focused on *products, people smiling, and the city*.
+        - Keep the prompt focused on *food, people smiling, products, and the city*.
+        - Example of a SAFE prompt for a food deal: "A vibrant, top-down photo of a delicious pizza, with steam rising, next to a cold drink on a wooden table."
         
         Respond *ONLY* with a valid JSON object.
         """
+        # --- END OF FIX ---
         
         user_prompt = f"""
         **City:** {city}
@@ -189,8 +191,8 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         image_prompt = data.get("image_prompt")
         hashtags = data.get("hashtags")
         target_audience = data.get("target_audience") 
-        predicted_impact_rating = data.get("predicted_impact_rating") # <-- NEW
-        predicted_impact_reasoning = data.get("predicted_impact_reasoning") # <-- NEW
+        predicted_impact_rating = data.get("predicted_impact_rating")
+        predicted_impact_reasoning = data.get("predicted_impact_reasoning")
         
         if not all([final_post_text, image_prompt, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning]):
             print(f"[OpenAI] ERROR: LLM JSON was missing one or more required keys. Got: {data}")
@@ -198,6 +200,8 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
             
         print("[OpenAI] ✅ Full creative package generated.")
         print(f"[OpenAI] DALL-E Prompt: {image_prompt}")
+        print(f"[OpenAI] Hashtags: {hashtags}")
+        print(f"[OpenAI] Target Audience: {target_audience}")
         print(f"[OpenAI] Impact: {predicted_impact_rating} - {predicted_impact_reasoning}")
 
         image_file_path = generate_image_with_dalle(openai_client, image_prompt)
