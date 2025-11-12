@@ -1,5 +1,5 @@
-
-# 🚀 GeoPulse AI Publisher
+Here's the direct streamlit link to access the app - 
+#  GeoPulse AI Publisher
 
 This is an AI-powered marketing tool that analyzes real-time, hyper-local signals (Weather, AQI, Holidays, and News) to generate and publish complete, brand-safe social media posts.
 
