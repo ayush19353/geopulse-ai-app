@@ -59,7 +59,7 @@ COMPANY_PROFILES = {
 # --- 2. PUBLISHER FUNCTIONS ---
 def publish_to_telegram(keys, message_text, image_path, hashtags):
     print(f"[Publisher] Attempting to post to Telegram...")
-    url = f"https.://api.telegram.org/bot{keys['TELEGRAM_BOT_TOKEN']}/sendPhoto"
+    url = f"https://api.telegram.org/bot{keys['TELEGRAM_BOT_TOKEN']}/sendPhoto"
     try:
         hashtag_string = " ".join(hashtags)
         full_caption = f"{message_text}\n\n{hashtag_string}"
@@ -102,7 +102,7 @@ def generate_image_with_dalle(openai_client, image_prompt):
     """
     Uses DALL-E 3 to generate an image, download it, and save it to a temp file.
     """
-    print("[DALL-E] Generating image... (Call 3)")
+    print(f"[DALL-E] Generating image with prompt: {image_prompt}")
     try:
         response = openai_client.images.generate(
             model="dall-e-3",
@@ -145,7 +145,7 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
             f"Top Event/News: {live_signal.get('top_event', 'None')}."
         )
         
-        # --- THIS IS THE FIX: A much stricter DALL-E SAFETY GUARDRAIL ---
+        # --- THIS IS THE STRICTEST DALL-E SAFETY GUARDRAIL ---
         system_prompt = f"""
         You are an expert social media manager and marketing strategist for the brand *{company_profile['brand_name']}*.
         Your brand voice is: *{company_profile['voice']}*
@@ -170,7 +170,6 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         
         Respond *ONLY* with a valid JSON object.
         """
-        # --- END OF FIX ---
         
         user_prompt = f"""
         **City:** {city}
@@ -279,7 +278,7 @@ def fetch_live_signals(keys, city: str):
     
     # 1. Fetch Weather
     try:
-        weather_url = f"https.://api.openweathermap.org/data/2.5/weather?q={city}&appid={keys['OPENWEATHER_API_KEY']}&units=metric"
+        weather_url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={keys['OPENWEATHER_API_KEY']}&units=metric"
         weather_res = requests.get(weather_url, verify=False)
         weather_res.raise_for_status()
         weather_data = weather_res.json()
@@ -294,7 +293,7 @@ def fetch_live_signals(keys, city: str):
     try:
         state = CITY_STATES.get(city) 
         if not state: raise Exception(f"City state not found for {city}")
-        aqi_url = f"https.://api.iqair.com/v2/city?city={city}&state={state}&country=India&key={keys['IQAIR_API_KEY']}"
+        aqi_url = f"https://api.iqair.com/v2/city?city={city}&state={state}&country=India&key={keys['IQAIR_API_KEY']}"
         aqi_res = requests.get(aqi_url, verify=False)
         aqi_res.raise_for_status()
         aqi_data = aqi_res.json()
@@ -306,7 +305,7 @@ def fetch_live_signals(keys, city: str):
     # 3. Fetch Holiday / Festival
     signals['holiday'] = "None" 
     try:
-        cal_url = (f"https.://calendarific.com/api/v2/holidays"
+        cal_url = (f"https://calendarific.com/api/v2/holidays"
                    f"?api_key={keys['CALENDARIFIC_API_KEY']}&country=IN&year={today.year}"
                    f"&month={today.month}&day={today.day}")
         cal_res = requests.get(cal_url, verify=False)
@@ -319,7 +318,7 @@ def fetch_live_signals(keys, city: str):
     # 4. Fetch Sports / Event News
     signals['top_event'] = "None" 
     try:
-        news_url = (f"https.://newsapi.org/v2/everything"
+        news_url = (f"https://newsapi.org/v2/everything"
                     f"?q=({city} AND (sports OR event OR match))"
                     f"&apiKey={keys['NEWS_API_KEY']}&sortBy=relevancy&pageSize=1")
         news_res = requests.get(news_url, verify=False)
