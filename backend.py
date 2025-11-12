@@ -102,7 +102,7 @@ def generate_image_with_dalle(openai_client, image_prompt):
     """
     Uses DALL-E 3 to generate an image, download it, and save it to a temp file.
     """
-    print(f"[DALL-E] Generating image with prompt: {image_prompt}")
+    print(f"[DALL-E] Generating image with prompt: {image_prompt} (Call 4)")
     try:
         response = openai_client.images.generate(
             model="dall-e-3",
@@ -130,10 +130,54 @@ def generate_image_with_dalle(openai_client, image_prompt):
         print(f"[DALL-E] ❌ FAILED to generate image: {e}")
         raise e
 
+# --- NEW: DECOUPLED IMAGE PROMPT FUNCTION (Call 3) ---
+def generate_safe_image_prompt(openai_client, post_text, company_profile):
+    """
+    This function ONLY generates the image prompt.
+    It focuses on the POSITIVE SOLUTION, not the negative trigger.
+    """
+    print("[GenAI] Generating a SAFE image prompt... (Call 3)")
+    try:
+        system_prompt = f"""
+        You are a creative director for the brand *{company_profile['brand_name']}*.
+        Your brand voice is: *{company_profile['voice']}*
+
+        **TASK:** Read the following social media post. Your job is to create a single, visually descriptive DALL-E prompt for a photorealistic image to accompany it.
+
+        **CRITICAL SAFETY GUARDRAIL:**
+        The image prompt MUST be 100% positive and focus *only* on the *solution* or *product* mentioned in the post.
+        - **DO NOT** mention the negative problem (e.g., "haze", "pollution", "rain", "bad weather", "smog", "unhealthy").
+        - **DO** focus on the positive outcome (e.g., "delicious food", "cozy indoors", "happy person", "new fashion").
+        - **BE LITERAL.** Avoid metaphors like "explosion of flavor" or "killer deal".
+        
+        **Post Text:**
+        "{post_text}"
+
+        Respond *ONLY* with the final, safe image prompt.
+        
+        **Example:**
+        If the post is "Delhi's haze is bad! Stay in and order our delicious biryani."
+        Your prompt should be: "A vibrant, top-down photorealistic shot of a steaming, aromatic bowl of biryani and a raita on a modern dining table."
+        (Notice: No mention of "haze" or "Delhi").
+        """
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            messages=[ {"role": "system", "content": system_prompt} ]
+        )
+        image_prompt = response.choices[0].message.content.strip().replace('"', '')
+        print(f"[GenAI] ✅ Safe Image Prompt: {image_prompt}")
+        return image_prompt
+
+    except Exception as e:
+        print(f"[GenAI] ❌ FAILED to generate safe image prompt: {e}")
+        raise e
+
 def generate_creative_assets(openai_client, city, trigger, tone, live_signal, company_profile):
     """
     This is the new master function.
-    It generates post text, image prompt, hashtags, AND Audience/Impact analysis.
+    It generates post text, hashtags, AND Audience/Impact analysis.
+    (It NO LONGER generates the image prompt directly).
     """
     print(f"--- Generating Creative Assets for {city} ---")
     try:
@@ -145,30 +189,19 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
             f"Top Event/News: {live_signal.get('top_event', 'None')}."
         )
         
-        # --- THIS IS THE STRICTEST DALL-E SAFETY GUARDRAIL ---
         system_prompt = f"""
         You are an expert social media manager and marketing strategist for the brand *{company_profile['brand_name']}*.
         Your brand voice is: *{company_profile['voice']}*
         Your relevant products are: *{", ".join(company_profile['product_examples'])}*
         
-        You MUST generate six things in a JSON format:
+        You MUST generate **five** things in a JSON format:
         1.  `post_text`: A short, ready-to-publish social media post (under 500 characters).
-        2.  `image_prompt`: A concise, visually descriptive DALL-E prompt.
-        3.  `hashtags`: A JSON array of 3-5 relevant and trending hashtags.
-        4.  `target_audience`: A JSON array of 2-3 specific audience segments this post will appeal to.
-        5.  `predicted_impact_rating`: A single rating ("High", "Medium", or "Low") of this post's potential.
-        6.  `predicted_impact_reasoning`: A 1-sentence analysis of *why* this post will perform well.
-
-        **DALL-E SAFETY GUARDRAIL (CRITICAL):**
-        The `image_prompt` MUST be 100% brand-safe and positive.
-        - **FOCUS ON THE POSITIVE SOLUTION, NOT THE NEGATIVE PROBLEM.**
-        - **UNSAFE (Negative Problem):** "A person coughing in a hazy city."
-        - **SAFE (Positive Solution):** "A happy person indoors, enjoying a fresh pizza, with a window showing a *blurry* city skyline."
-        - **BE LITERAL AND DESCRIPTIVE.** Avoid all metaphors (e.g., "explosion of flavor", "killer deal").
-        - **DO NOT** use any words related to violence, harm, negativity, or suffering (e.g., "attack", "choke", "trap", "suffer").
-        - Your prompt must be a *literal description* of a positive, safe scene.
+        2.  `hashtags`: A JSON array of 3-5 relevant and trending hashtags.
+        3.  `target_audience`: A JSON array of 2-3 specific audience segments this post will appeal to.
+        4.  `predicted_impact_rating`: A single rating ("High", "Medium", or "Low") of this post's potential.
+        5.  `predicted_impact_reasoning`: A 1-sentence analysis of *why* this post will perform well.
         
-        Respond *ONLY* with a valid JSON object.
+        Respond *ONLY* with a valid JSON object. (Do NOT include `image_prompt`).
         """
         
         user_prompt = f"""
@@ -178,7 +211,7 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         **Chosen Tone:** "{tone}"
         """
 
-        print("[OpenAI] Asking GPT-4o for full creative package... (Call 2)")
+        print("[OpenAI] Asking GPT-4o for creative package... (Call 2)")
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             response_format={ "type": "json_object" }, 
@@ -190,25 +223,19 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         
         data = json.loads(response.choices[0].message.content)
         final_post_text = data.get("post_text")
-        image_prompt = data.get("image_prompt")
         hashtags = data.get("hashtags")
         target_audience = data.get("target_audience") 
         predicted_impact_rating = data.get("predicted_impact_rating")
         predicted_impact_reasoning = data.get("predicted_impact_reasoning")
         
-        if not all([final_post_text, image_prompt, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning]):
+        if not all([final_post_text, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning]):
             print(f"[OpenAI] ERROR: LLM JSON was missing one or more required keys. Got: {data}")
             raise Exception("LLM JSON was missing required keys.")
             
         print("[OpenAI] ✅ Full creative package generated.")
-        print(f"[OpenAI] DALL-E Prompt: {image_prompt}")
-        print(f"[OpenAI] Hashtags: {hashtags}")
-        print(f"[OpenAI] Target Audience: {target_audience}")
-        print(f"[OpenAI] Impact: {predicted_impact_rating} - {predicted_impact_reasoning}")
-
-        image_file_path = generate_image_with_dalle(openai_client, image_prompt)
         
-        return final_post_text, image_file_path, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning
+        # --- Return all 5 values ---
+        return final_post_text, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning
 
     except Exception as e:
         print(f"[OpenAI] ERROR generating creative assets: {e}")
