@@ -12,22 +12,19 @@ st.set_page_config(
 
 # --- 1.5 (NEW) CUSTOM CSS THEME ---
 def load_css():
-    """
-    This function injects a custom dark-mode CSS theme.
-    """
     st.markdown("""
     <style>
     /* Main page background */
     .main .block-container {
-        background-color: #0E1117; 
-        color: #FAFAFA;
+        background-color: #0E1117; /* Dark background */
+        color: #FAFAFA; /* Light text */
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
     
     /* Sidebar */
     [data-testid="stSidebar"] {
-        background-image: linear-gradient(180deg, #1a1a2e, #0E1117);
+        background-color: #1a1a2e; /* Dark purple/blue */
         border-right: 1px solid #3c3c5a;
     }
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
@@ -36,41 +33,31 @@ def load_css():
     [data-testid="stSidebar"] [data-testid="stHeader"] {
         color: #FAFAFA;
     }
-    [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] {
-        background-color: #1E1E3F;
-        border: 1px solid #3c3c5a;
-    }
 
     /* Buttons */
     [data-testid="stButton"] button {
-        background-image: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        background-color: #7540EE; /* Bright purple */
         color: white;
         border: none;
         border-radius: 8px;
         padding: 10px 14px;
         transition: all 0.3s ease;
         font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0, 0.3);
     }
     [data-testid="stButton"] button:hover {
-        background-image: linear-gradient(135deg, #5a0fb0 0%, #1a60d6 100%);
-        box-shadow: 0 6px 16px rgba(106, 17, 203, 0.4);
-        transform: translateY(-2px);
-    }
-    [data-testid="stButton"] button:active {
-        transform: translateY(0px);
+        background-color: #5a2fd6; /* Darker purple */
+        box-shadow: 0 4px 12px rgba(117, 64, 238, 0.4);
     }
     
     /* Headers */
     h1, h2, h3 {
         color: #FAFAFA;
-        font-weight: 700;
     }
     
     /* Info boxes (like the 'Rationale') */
     [data-testid="stAlert"] {
-        background-color: rgba(106, 17, 203, 0.15); /* Semi-transparent purple */
-        border: 1px solid #6a11cb;
+        background-color: #1E1E3F; /* Dark blue */
+        border: 1px solid #3c3c5a;
         border-radius: 8px;
         color: #FAFAFA;
     }
@@ -78,7 +65,7 @@ def load_css():
         color: #FAFAFA;
     }
     
-    /* Radio buttons (HITL) */
+    /* Radio buttons */
     [data-testid="stRadio"] label {
         background-color: #1E1E3F;
         border: 1px solid #3c3c5a;
@@ -89,14 +76,9 @@ def load_css():
     }
     [data-testid="stRadio"] label:hover {
         border-color: #7540EE;
-        background-color: #2a2a4c;
     }
     
-    /* Image */
-    [data-testid="stImage"] img {
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0, 0.3);
-    }
+    /* Image caption */
     [data-testid="stImage"] figcaption {
         color: #A0A0B0;
     }
@@ -108,20 +90,12 @@ def load_css():
         border-radius: 8px;
     }
     
-    /* Dashboard Metrics */
+    /* Metrics */
     [data-testid="stMetric"] {
         background-color: #1E1E3F;
         border: 1px solid #3c3c5a;
         border-radius: 8px;
         padding: 1rem;
-        color: #FAFAFA;
-    }
-    [data-testid="stMetric"] label {
-        color: #A0A0B0; /* Lighter label text */
-    }
-    [data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #7540EE; /* Purple metric value */
-        font-size: 2.5rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -167,26 +141,19 @@ st.markdown("Your AI co-pilot for creating hyper-local, real-time marketing camp
 
 # --- 5. Sidebar Controls ---
 st.sidebar.title("GeoPulse Controls 🎮")
+
+# --- Step 1: Selection Form ---
 st.sidebar.markdown("### Step 1: Choose Your Target")
-
-# Industry Selection
 industry_key = st.sidebar.selectbox("🛍️ Select an Industry:", list(backend.COMPANY_PROFILES.keys()))
-
-# Brand Selection (This will now update instantly)
 brand_options = list(backend.COMPANY_PROFILES[industry_key].keys())
 brand_key = st.sidebar.selectbox("🏷️ Select a Brand:", brand_options)
-
-# City Selection
 city_key = st.sidebar.selectbox("🏙️ Select a City:", backend.CITIES)
-
 st.sidebar.markdown("---")
-# Regular button, not a form submitter
 analyze_button = st.sidebar.button("🧠 Analyze Signals & Get Triggers", use_container_width=True, type="primary")
 
 # --- 6. Main Content Area (Displays results based on step) ---
 main_content = st.container()
 
-# This runs when the "Analyze" button is clicked
 if analyze_button:
     st.session_state.company_profile = backend.COMPANY_PROFILES[industry_key][brand_key].copy()
     st.session_state.company_profile['brand_name'] = brand_key.upper()
@@ -226,7 +193,6 @@ if st.session_state.step == "approval":
         
         trigger_options = []
         for trigger in st.session_state.ranked_triggers:
-            # --- UPGRADED: Shows AI Rationale ---
             option = f"**{trigger['trigger']}** (Tone: *{trigger['tone']}*) \n\n*AI Rationale: {trigger.get('reasoning', 'N/A')}*"
             trigger_options.append(option)
         
@@ -261,19 +227,18 @@ if st.session_state.step == "approval":
             }
             st.rerun()
 
-# --- Step 3: Generation (Processing) ---
+# --- Step 3: Generation (Processing) (FIXED) ---
 if st.session_state.step == "generation":
     with main_content:
         st.header("Step 3: AI Creative Generation 🎨")
         
         try:
-            # Initialize all asset variables to None
-            post_text, image_prompt, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning = (None, None, None, None, None, None)
+            # Initialize asset variables
+            post_text, hashtags, target_audience, predicted_impact_rating, predicted_impact_reasoning = (None, None, None, None, None)
             
-            with st.spinner("🤖 AI Creative is writing the post, image prompt, and analysis... (Call 2)"):
+            with st.spinner("🤖 AI Creative is writing the post and analysis... (Call 2)"):
                 (
                     post_text, 
-                    image_prompt, 
                     hashtags, 
                     target_audience, 
                     predicted_impact_rating,
@@ -287,29 +252,47 @@ if st.session_state.step == "generation":
                     st.session_state.company_profile
                 )
             
-            if not post_text or not image_prompt:
-                st.error("❌ AI Creative (Call 2) failed to return valid data. This might be a temporary OpenAI issue. Please try again.")
-                st.session_state.step = "approval"
+            # --- THIS IS THE FIX ---
+            # We must check if the first call succeeded before trying the second
+            if not post_text:
+                st.error("❌ AI Creative (Call 2) failed to return valid text. This might be a temporary OpenAI issue. Please try again.")
+                st.session_state.step = "approval" # Go back a step
                 if st.button("Try Again"):
                     st.rerun()
             
             else:
-                with st.spinner(f"🖼️ DALL-E is generating image... (Call 3)"):
-                    image_path = backend.generate_image_with_dalle(
+                # --- If Call 2 succeeded, proceed to Call 3 ---
+                with st.spinner(f"🎨 AI Director is writing a safe image prompt... (Call 3)"):
+                    image_prompt = backend.generate_safe_image_prompt(
                         openai_client,
-                        image_prompt
+                        post_text,
+                        st.session_state.company_profile
                     )
                 
-                # --- NEW: Save all 6 assets ---
-                st.session_state.final_assets["post_text"] = post_text
-                st.session_state.final_assets["image_path"] = image_path
-                st.session_state.final_assets["hashtags"] = hashtags
-                st.session_state.final_assets["target_audience"] = target_audience
-                st.session_state.final_assets["predicted_impact_rating"] = predicted_impact_rating
-                st.session_state.final_assets["predicted_impact_reasoning"] = predicted_impact_reasoning
-                
-                st.session_state.step = "review"
-                st.rerun()
+                if not image_prompt:
+                    st.error("❌ AI (Call 3) failed to generate a safe image prompt. Please try again.")
+                    st.session_state.step = "approval"
+                    if st.button("Try Again"):
+                        st.rerun()
+                else:
+                    # --- If Call 3 succeeded, proceed to Call 4 ---
+                    with st.spinner(f"🖼️ DALL-E is generating image for: *{image_prompt}* (Call 4)"):
+                        image_path = backend.generate_image_with_dalle(
+                            openai_client,
+                            image_prompt
+                        )
+                    
+                    # --- Save all 6 assets ---
+                    st.session_state.final_assets["post_text"] = post_text
+                    st.session_state.final_assets["image_path"] = image_path
+                    st.session_state.final_assets["hashtags"] = hashtags
+                    st.session_state.final_assets["target_audience"] = target_audience
+                    st.session_state.final_assets["predicted_impact_rating"] = predicted_impact_rating
+                    st.session_state.final_assets["predicted_impact_reasoning"] = predicted_impact_reasoning
+                    
+                    st.session_state.step = "review"
+                    st.rerun()
+            # --- END OF FIX ---
 
         except Exception as e:
             st.error(f"An error occurred during generation: {e}")
@@ -345,7 +328,7 @@ if st.session_state.step == "review":
         
         with col1_img:
             st.subheader("Generated Post")
-            if assets['image_path']:
+            if assets.get('image_path'):
                 st.image(assets['image_path'], caption="AI-Generated Image", use_column_width=True)
             else:
                 st.error("Image generation failed.")
@@ -359,8 +342,7 @@ if st.session_state.step == "review":
         # Publish Buttons
         col1_pub, col2_pub = st.columns(2)
         with col1_pub:
-            # Only enable publishing if image generation was successful
-            publish_disabled = assets['image_path'] is None
+            publish_disabled = assets.get('image_path') is None
             if st.button("🚀 PUBLISH POST", use_container_width=True, type="primary", disabled=publish_disabled):
                 with st.spinner("Publishing to Discord & Telegram..."):
                     try:
