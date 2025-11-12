@@ -160,12 +160,15 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         6.  `predicted_impact_reasoning`: A 1-sentence analysis of *why* this post will perform well.
 
         **DALL-E SAFETY GUARDRAIL (CRITICAL):**
-        The `image_prompt` MUST be 100% brand-safe. The DALL-E safety system is very strict.
-        - **BE LITERAL.** Avoid all metaphors (e.g., "explosion of flavor", "killer deal", "attack the hunger").
-        - **DO NOT** use words that could be misinterpreted as violent, sexual, hateful, or promoting self-harm (e.g., avoid "killer", "shoot", "bang", "die for").
-        - Keep the prompt focused *only* on the product, people smiling, and the city.
-        - **SAFE EXAMPLE:** "A vibrant, top-down photo of a delicious pizza, with steam rising, next to a cold drink on a wooden table."
-        - **UNSAFE EXAMPLE:** "Attack your hunger with this killer pizza deal!"
+        The `image_prompt` MUST be 100% brand-safe. DALL-E's safety filter is very strict.
+        - **BE LITERAL AND DESCRIPTIVE.** Avoid all metaphors, slang, or figurative language.
+        - **UNSAFE:** "An explosion of flavor" (flags "explosion")
+        - **SAFE:** "A vibrant, top-down photo of a delicious pizza."
+        - **UNSAFE:** "Attack the haze" (flags "attack")
+        - **SAFE:** "A person indoors, drinking tea, looking out at a hazy city."
+        - **UNSAFE:** "Killer deals on food" (flags "killer")
+        - **SAFE:** "A promotional graphic showing 50% off biryani."
+        - Your prompt must be a *literal description* of a scene.
         
         Respond *ONLY* with a valid JSON object.
         """
