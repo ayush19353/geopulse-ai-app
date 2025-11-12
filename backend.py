@@ -59,7 +59,7 @@ COMPANY_PROFILES = {
 # --- 2. PUBLISHER FUNCTIONS ---
 def publish_to_telegram(keys, message_text, image_path, hashtags):
     print(f"[Publisher] Attempting to post to Telegram...")
-    url = f"https://api.telegram.org/bot{keys['TELEGRAM_BOT_TOKEN']}/sendPhoto"
+    url = f"https.://api.telegram.org/bot{keys['TELEGRAM_BOT_TOKEN']}/sendPhoto"
     try:
         hashtag_string = " ".join(hashtags)
         full_caption = f"{message_text}\n\n{hashtag_string}"
@@ -160,15 +160,13 @@ def generate_creative_assets(openai_client, city, trigger, tone, live_signal, co
         6.  `predicted_impact_reasoning`: A 1-sentence analysis of *why* this post will perform well.
 
         **DALL-E SAFETY GUARDRAIL (CRITICAL):**
-        The `image_prompt` MUST be 100% brand-safe. DALL-E's safety filter is very strict.
-        - **BE LITERAL AND DESCRIPTIVE.** Avoid all metaphors, slang, or figurative language.
-        - **UNSAFE:** "An explosion of flavor" (flags "explosion")
-        - **SAFE:** "A vibrant, top-down photo of a delicious pizza."
-        - **UNSAFE:** "Attack the haze" (flags "attack")
-        - **SAFE:** "A person indoors, drinking tea, looking out at a hazy city."
-        - **UNSAFE:** "Killer deals on food" (flags "killer")
-        - **SAFE:** "A promotional graphic showing 50% off biryani."
-        - Your prompt must be a *literal description* of a scene.
+        The `image_prompt` MUST be 100% brand-safe and positive.
+        - **FOCUS ON THE POSITIVE SOLUTION, NOT THE NEGATIVE PROBLEM.**
+        - **UNSAFE (Negative Problem):** "A person coughing in a hazy city."
+        - **SAFE (Positive Solution):** "A happy person indoors, enjoying a fresh pizza, with a window showing a *blurry* city skyline."
+        - **BE LITERAL AND DESCRIPTIVE.** Avoid all metaphors (e.g., "explosion of flavor", "killer deal").
+        - **DO NOT** use any words related to violence, harm, negativity, or suffering (e.g., "attack", "choke", "trap", "suffer").
+        - Your prompt must be a *literal description* of a positive, safe scene.
         
         Respond *ONLY* with a valid JSON object.
         """
@@ -281,7 +279,7 @@ def fetch_live_signals(keys, city: str):
     
     # 1. Fetch Weather
     try:
-        weather_url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={keys['OPENWEATHER_API_KEY']}&units=metric"
+        weather_url = f"https.://api.openweathermap.org/data/2.5/weather?q={city}&appid={keys['OPENWEATHER_API_KEY']}&units=metric"
         weather_res = requests.get(weather_url, verify=False)
         weather_res.raise_for_status()
         weather_data = weather_res.json()
@@ -296,7 +294,7 @@ def fetch_live_signals(keys, city: str):
     try:
         state = CITY_STATES.get(city) 
         if not state: raise Exception(f"City state not found for {city}")
-        aqi_url = f"https://api.iqair.com/v2/city?city={city}&state={state}&country=India&key={keys['IQAIR_API_KEY']}"
+        aqi_url = f"https.://api.iqair.com/v2/city?city={city}&state={state}&country=India&key={keys['IQAIR_API_KEY']}"
         aqi_res = requests.get(aqi_url, verify=False)
         aqi_res.raise_for_status()
         aqi_data = aqi_res.json()
@@ -308,7 +306,7 @@ def fetch_live_signals(keys, city: str):
     # 3. Fetch Holiday / Festival
     signals['holiday'] = "None" 
     try:
-        cal_url = (f"https://calendarific.com/api/v2/holidays"
+        cal_url = (f"https.://calendarific.com/api/v2/holidays"
                    f"?api_key={keys['CALENDARIFIC_API_KEY']}&country=IN&year={today.year}"
                    f"&month={today.month}&day={today.day}")
         cal_res = requests.get(cal_url, verify=False)
@@ -321,7 +319,7 @@ def fetch_live_signals(keys, city: str):
     # 4. Fetch Sports / Event News
     signals['top_event'] = "None" 
     try:
-        news_url = (f"https://newsapi.org/v2/everything"
+        news_url = (f"https.://newsapi.org/v2/everything"
                     f"?q=({city} AND (sports OR event OR match))"
                     f"&apiKey={keys['NEWS_API_KEY']}&sortBy=relevancy&pageSize=1")
         news_res = requests.get(news_url, verify=False)
